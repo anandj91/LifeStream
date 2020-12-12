@@ -11,4 +11,12 @@
       <ProjectReference Include="..\Trill\Sources\Core\Microsoft.StreamProcessing\Microsoft.StreamProcessing.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Streamer" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MathNet.Filtering" Version="0.7.0" />
+    </ItemGroup>
+
 </Project>
