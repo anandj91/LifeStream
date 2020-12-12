@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LifeStream", "LifeStream\LifeStream.csproj", "{E5DB43CE-93EA-4A04-BA9E-4DBEEB852C2B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.StreamProcessing.Provider", "Trill\Sources\Core\Microsoft.StreamProcessing.Provider\Microsoft.StreamProcessing.Provider.csproj", "{1CC5FA6C-0631-4F5A-A5D6-592D831A7084}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.StreamProcessing", "Trill\Sources\Core\Microsoft.StreamProcessing\Microsoft.StreamProcessing.csproj", "{94174E19-F106-488C-BD15-1F5F7C1F0007}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E5DB43CE-93EA-4A04-BA9E-4DBEEB852C2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5DB43CE-93EA-4A04-BA9E-4DBEEB852C2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5DB43CE-93EA-4A04-BA9E-4DBEEB852C2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5DB43CE-93EA-4A04-BA9E-4DBEEB852C2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CC5FA6C-0631-4F5A-A5D6-592D831A7084}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CC5FA6C-0631-4F5A-A5D6-592D831A7084}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CC5FA6C-0631-4F5A-A5D6-592D831A7084}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CC5FA6C-0631-4F5A-A5D6-592D831A7084}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94174E19-F106-488C-BD15-1F5F7C1F0007}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94174E19-F106-488C-BD15-1F5F7C1F0007}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94174E19-F106-488C-BD15-1F5F7C1F0007}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94174E19-F106-488C-BD15-1F5F7C1F0007}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

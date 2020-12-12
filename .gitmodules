@@ -1,0 +1,8 @@
+[submodule "LifeStream/reactive"]
+    path = LifeStream/reactive
+    url = https://github.com/anandj91/reactive.git
+    branch = streamer
+[submodule "LifeStream/Trill"]
+    path = LifeStream/Trill
+    url = https://github.com/anandj91/Trill.git
+    branch = struct
