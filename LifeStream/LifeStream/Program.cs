@@ -10,10 +10,10 @@ namespace LifeStream
 {
     class Program
     {
-        static void NonFuseTest<TResult>(Func<int, IStreamable<Empty, Signal>> data,
+        static void NonFuseTest<TResult>(Func<IStreamable<Empty, Signal>> data,
             Func<IStreamable<Empty, Signal>, IStreamable<Empty, TResult>> transform)
         {
-            var stream = data(1000);
+            var stream = data();
 
             var sw = new Stopwatch();
             sw.Start();
@@ -29,10 +29,10 @@ namespace LifeStream
             Console.WriteLine("Count: {0}, Time: {1}", count, sw.Elapsed.TotalSeconds);
         }
 
-        static void FuseTest<TResult>(Func<int, IStreamable<Empty, Signal>> data,
+        static void FuseTest<TResult>(Func<IStreamable<Empty, Signal>> data,
             Func<FOperation<Signal>, FOperation<TResult>> transform)
         {
-            var stream = data(1000);
+            var stream = data();
 
             var sw = new Stopwatch();
             sw.Start();
@@ -55,10 +55,11 @@ namespace LifeStream
             Console.WriteLine("Count: {0}, Time: {1}", count, sw.Elapsed.TotalSeconds);
         }
 
-        static void MultiNonFuseTest(Func<int, IStreamable<Empty, Signal>> data)
+        static void MultiNonFuseTest(
+            Func<IStreamable<Empty, Signal>> abp_data, Func<IStreamable<Empty, Signal>> ecg_data)
         {
-            var abp = data(125);
-            var ecg = data(500);
+            var abp = abp_data();
+            var ecg = ecg_data();
 
             var sw = new Stopwatch();
             sw.Start();
@@ -93,10 +94,10 @@ namespace LifeStream
             o.e = r;
         }
 
-        static void MultiFuseTest(Func<int, IStreamable<Empty, Signal>> data)
+        static void MultiFuseTest(Func<IStreamable<Empty, Signal>> abp_data, Func<IStreamable<Empty, Signal>> ecg_data)
         {
-            var abp = data(125);
-            var ecg = data(500);
+            var abp = abp_data();
+            var ecg = ecg_data();
 
             var sw = new Stopwatch();
             sw.Start();
@@ -144,84 +145,108 @@ namespace LifeStream
             Config.StreamScheduler = StreamScheduler.OwnedThreads(1);
             Config.ForceRowBasedExecution = true;
 
+            var testcase = args[0].ToLower();
+            var engine = args[1].ToLower();
+
             const int start = 0;
             const int duration = 60000;
             const int freq = 500;
-            const long period = 1000 / freq;
+            const int period = 1000 / freq;
             const long window = 60000;
             const long gap_tol = window;
             Config.DataGranularity = window;
 
-            Func<int, IStreamable<Empty, Signal>> data = (int freq) =>
+            Func<IStreamable<Empty, Signal>> data = () =>
             {
-                string loc = "2018/01/";
-                //var obs = new TestObs("test", start, duration, freq);
-                /*
-                var abp = new CSVSignal(
-                            "/home/anand/stream/Streamer/Resources/csv/",
-                            loc,
-                            "MDC_PRESS_BLD_ART_ABP",
-                            "3-73_2"
-                        )
-                        .Parse()
+                return new TestObs("test", start, duration, freq)
                         .Select(e => e.Payload)
-                        .ToTemporalStreamable(e => e.ts, e => e.ts + 8)
-                    ;
-                    */
-                var ecg = new TestObs()
-                        .ToTemporalStreamable(e => e.ts, e => e.ts + 2)
-                    ;
-                var ret = ecg
-                        .Cache()
-                    ;
-                return ret
+                        .ToTemporalStreamable(e => e.ts, e => e.ts + period)
                     ;
             };
-            /*
-            NonFuseTest(data, false,
-                bs => bs
-                    //.Select(e => Unit.Default)
-                    //.Normalize(window)
-                    //.Stitch()
-                    //.Chop(0, 1)
-                    //.Multicast(s => s.ClipEventDuration(s))
-                    //.Select(e =>e.val)
-                    //.Where(e => e.val%2 == 0)
-                    //.TumblingWindowLifetime(window)
-                    //.Aggregate(w => w.Average(e=>e.val))
-                    //.Multicast(s =>s.Join(s, (l, r) => new{l, r}))
-                    //.ConsecutivePairs((l, r) => new {l, r})
-                    //.Normalize(window)
-                    //.FillConst(period, gap_tol, 0)
-                    .FillMean(window, period, gap_tol)
-                    .Resample(period, 1)
-                    .Normalize(window)
-                    .BandPassFilter(period, window, 2, 300)
-            );
-            void Selector(long t, Signal p, out float o)
+            
+            Func<IStreamable<Empty, Signal>> abp_data = () =>
             {
-                o = p.val;
+                return new TestObs("test", start, duration, freq)
+                        .Select(e => e.Payload)
+                        .ToTemporalStreamable(e => e.ts, e => e.ts + period)
+                    ;
+            };
+            
+            Func<IStreamable<Empty, Signal>> ecg_data = () =>
+            {
+                return new TestObs("test", start, duration, freq)
+                        .Select(e => e.Payload)
+                        .ToTemporalStreamable(e => e.ts, e => e.ts + period)
+                    ;
+            };
+
+            switch (testcase + "_" + engine)
+            {
+                case "normalize_trill":
+                    NonFuseTest(data, stream =>
+                        stream
+                            .Normalize(window)
+                    );
+                    break;
+                case "normalize_lifestream":
+                    FuseTest(data, stream =>
+                        stream
+                            .Normalize(500, window)
+                    );
+                    break;
+                case "passfilter_trill":
+                    NonFuseTest(data, stream =>
+                        stream
+                            .BandPassFilter()
+                    );
+                    break;
+                case "passfilter_lifestream":
+                    FuseTest(data, stream =>
+                        stream
+                            .Normalize(500, window)
+                    );
+                    break;
+                case "fillconst_trill":
+                    NonFuseTest(data, stream =>
+                        stream
+                            .Normalize(window)
+                    );
+                    break;
+                case "fillconst_lifestream":
+                    FuseTest(data, stream =>
+                        stream
+                            .Normalize(500, window)
+                    );
+                    break;
+                case "fillmean_trill":
+                    NonFuseTest(data, stream =>
+                        stream
+                            .Normalize(window)
+                    );
+                    break;
+                case "fillmean_lifestream":
+                    FuseTest(data, stream =>
+                        stream
+                            .Normalize(500, window)
+                    );
+                    break;
+                case "resample_trill":
+                    NonFuseTest(data, stream =>
+                        stream
+                            .Normalize(window)
+                    );
+                    break;
+                case "resample_lifestream":
+                    FuseTest(data, stream =>
+                        stream
+                            .Normalize(500, window)
+                    );
+                    break;
+                default:
+                    Console.Error.WriteLine("Unknown benchmark combination {0} on {1}", testcase, engine);
+                    break;
             }
-            FuseTest(data, false,
-                fop => fop
-                    //.Chop(1)
-                    //.ClipEventDuration()
-                    //.Select<Signal, float>(Selector)
-                    //.Where(e => e.val%2 == 0)
-                    //.ConsecutivePairs<Signal, FStreamable.SigPair>(PairJoiner)
-                    //.Multicast(s =>s.Join<Signal, Signal, FStreamable.SigPair>(s, PairJoiner))
-                    //.Aggregate(w => w.Average(e=>e.val), window, window)
-                    //.Normalize(period, window)
-                    //.FillConst(period, gap_tol, 0)
-                    .FillMean(window, period, gap_tol)
-                    .Resample(period, 1, period)
-                    .Normalize(1, window)
-                    .BandPassFilter(1, window, 2, 300)
-            );
-                        */
-            string loc = "2018/01/31/";
-            //MultiNonFuseTest(loc, false);
-            //MultiFuseTest(loc, false);
+
             Config.StreamScheduler.Stop();
         }
     }
