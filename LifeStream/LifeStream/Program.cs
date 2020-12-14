@@ -183,14 +183,14 @@ namespace LifeStream
                 case "passfilter_trill":
                     time = NonFuseTest(data, stream =>
                         stream
-                            .BandPassFilter(period, window, 40, 300)
+                            .BandPassFilter(period, window, 2, 200)
                     );
                     break;
                 case "passfilter_lifestream":
                     Config.FuseFactor = (int) (window / period);
                     time = FuseTest(data, stream =>
                         stream
-                            .BandPassFilter(period, window, 40, 300)
+                            .BandPassFilter(period, window, 2, 200)
                     );
                     break;
                 case "fillconst_trill":
