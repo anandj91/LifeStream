@@ -1,5 +1,7 @@
 FROM ubuntu:20.04
 
+ADD ./LifeStream /root
+
 RUN apt-get update
 RUN apt-get install -y wget
 
@@ -14,4 +16,8 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E03280
 RUN echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | tee /etc/apt/sources.list.d/mono-official-stable.list
 RUN apt-get update
 
-RUN apt-get install -y mono-devel python3 virtualenv
+RUN mv /usr/share/dotnet/sdk/3.1.404/Sdks/Microsoft.NET.Sdk.WindowsDesktop/targets/Microsoft.WinFx.props /usr/share/dotnet/sdk/3.1.404/Sdks/Microsoft.NET.Sdk.WindowsDesktop/targets/Microsoft.WinFX.props
+RUN mv /usr/share/dotnet/sdk/3.1.404/Sdks/Microsoft.NET.Sdk.WindowsDesktop/targets/Microsoft.WinFx.targets /usr/share/dotnet/sdk/3.1.404/Sdks/Microsoft.NET.Sdk.WindowsDesktop/targets/Microsoft.WinFX.targets
+
+RUN apt-get install -y mono-devel python3 python3-pip
+RUN pip3 install -r /root/requirements.txt
