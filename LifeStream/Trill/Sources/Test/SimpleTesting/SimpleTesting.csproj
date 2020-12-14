@@ -1,0 +1,165 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
+    <Platforms>AnyCPU</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Reactive" Version="4.3.2" />
+    <PackageReference Include="System.Reactive.Linq" Version="4.1.5" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.0.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.0.0" />
+  </ItemGroup>
+
+  <!--
+    Microsoft.NET.Test.Sdk in .NET Core injects a stub main entry point for test execution by default to convert lib projects to console apps.
+    Since we have our own entry point to enable manually compiling OutputType of Exe, we need to tell it not to generate one automatically.
+  -->
+  <PropertyGroup Condition=" '$(TargetFramework)' != 'net472' ">
+    <GenerateProgramFile>false</GenerateProgramFile>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <TransformOnBuild>true</TransformOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="IngressEgress\DisorderedIngressAndEgressTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DisorderedIngressAndEgressTests.cs</LastGenOutput>
+    </Content>
+    <Content Include="Macros\AdjustColumns.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>AdjustColumns.cs</LastGenOutput>
+    </Content>
+    <Content Include="CheckpointRestoreTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>CheckpointRestoreTests.cs</LastGenOutput>
+    </Content>
+    <Content Include="Streamables\GroupStreamableTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>GroupStreamableTests.cs</LastGenOutput>
+    </Content>
+    <Content Include="IngressEgress\IngressAndEgressTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>IngressAndEgressTests.cs</LastGenOutput>
+    </Content>
+    <Content Include="Streamables\JoinTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>JoinTests.cs</LastGenOutput>
+    </Content>
+    <Content Include="Streamables\QuantizeLifetimeTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>QuantizeLifetimeTests.cs</LastGenOutput>
+    </Content>
+    <Content Include="Macros\LeftOuterJoinTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>LeftOuterJoinTests.cs</LastGenOutput>
+    </Content>
+    <None Include="IngressEgress\FlushPolicyTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>FlushPolicyTests.cs</LastGenOutput>
+    </None>
+    <None Include="Partitioned\PartitionedIngressAndEgressTestsDisordered.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>PartitionedIngressAndEgressTestsDisordered.cs</LastGenOutput>
+    </None>
+    <Content Include="Macros\PivotUnpivot.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>PivotUnpivot.cs</LastGenOutput>
+    </Content>
+    <Content Include="IngressEgress\ReorderPolicyTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ReorderPolicyTests.cs</LastGenOutput>
+    </Content>
+    <Content Include="Streamables\ShuffleStreamableTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ShuffleStreamableTests.cs</LastGenOutput>
+    </Content>
+    <Content Include="SimpleTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SimpleTests.cs</LastGenOutput>
+    </Content>
+    <Content Include="SnapshotTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SnapshotTests.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="CheckpointRestoreTests.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CheckpointRestoreTests.tt</DependentUpon>
+    </Compile>
+    <Compile Update="IngressEgress\DisorderedIngressAndEgressTests.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DisorderedIngressAndEgressTests.tt</DependentUpon>
+    </Compile>
+    <Compile Update="IngressEgress\IngressAndEgressTests.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>IngressAndEgressTests.tt</DependentUpon>
+    </Compile>
+    <Compile Update="IngressEgress\ReorderPolicyTests.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ReorderPolicyTests.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Macros\AdjustColumns.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AdjustColumns.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Macros\LeftOuterJoinTests.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>LeftOuterJoinTests.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Macros\PivotUnpivot.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>PivotUnpivot.tt</DependentUpon>
+    </Compile>
+    <Compile Update="SimpleTests.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SimpleTests.tt</DependentUpon>
+    </Compile>
+    <Compile Update="SnapshotTests.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SnapshotTests.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Streamables\GroupStreamableTests.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>GroupStreamableTests.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Streamables\JoinTests.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>JoinTests.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Streamables\QuantizeLifetimeTests.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>QuantizeLifetimeTests.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Streamables\ShuffleStreamableTests.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ShuffleStreamableTests.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v16.0\TextTemplating\Microsoft.TextTemplating.targets" />
+
+</Project>

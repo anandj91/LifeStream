@@ -1,4 +1,4 @@
-LifeStream/.idea/
-LifeStream/LifeStream/obj
+.idea
 LifeStream/LifeStream.sln.DotSettings.user
-LifeStream/LifeStream/bin/
+bin
+obj

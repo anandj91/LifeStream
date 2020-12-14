@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.1;net461;netcoreapp3.0</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS0618;CS8603;CS8625</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\System.Interactive.Async.Providers\System.Interactive.Async.Providers.csproj" />
+    <ProjectReference Include="..\System.Linq.Async\System.Linq.Async.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+    <PackageReference Include="FluentAssertions" Version="5.10.2" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\System.Linq.Async.Tests\ValueTaskHelpers.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="AsyncQueryableExTests.Generated.tt">
+      <LastGenOutput>AsyncQueryableExTests.Generated.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+    <None Update="AsyncQueryableTests.Generated.tt" Generator="TextTemplatingFileGenerator" LastGenOutput="AsyncQueryableTests.Generated.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="AsyncQueryableExTests.Generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AsyncQueryableExTests.Generated.tt</DependentUpon>
+    </Compile>
+    <Compile Update="AsyncQueryableTests.Generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AsyncQueryableTests.Generated.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+</Project>
