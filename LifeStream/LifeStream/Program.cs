@@ -9,8 +9,8 @@ namespace LifeStream
 {
     class Program
     {
-        static void NonFuseTest<TResult>(Func<IStreamable<Empty, Signal>> data,
-            Func<IStreamable<Empty, Signal>, IStreamable<Empty, TResult>> transform, bool print)
+        static double NonFuseTest<TResult>(Func<IStreamable<Empty, Signal>> data,
+            Func<IStreamable<Empty, Signal>, IStreamable<Empty, TResult>> transform)
         {
             var stream = data();
 
@@ -18,25 +18,13 @@ namespace LifeStream
             sw.Start();
             var s_obs = transform(stream);
 
-            long count = 0;
-            s_obs
-                .ToStreamEventObservable()
-                .Where(e => e.IsData && (e.IsInterval || e.IsStart))
-                .ForEach(e =>
-                {
-                    count++;
-                    if (print)
-                    {
-                        Console.WriteLine("{0}", e);
-                    }
-                });
+            s_obs.Cache();
             sw.Stop();
-            Console.WriteLine("Count: {0} events, Time: {1} sec, Throughput: {2:#.###} million events/sec",
-                count, sw.Elapsed.TotalSeconds, count / (sw.Elapsed.TotalSeconds * Math.Pow(10, 6)));
+            return sw.Elapsed.TotalSeconds;
         }
 
-        static void FuseTest<TResult>(Func<IStreamable<Empty, Signal>> data,
-            Func<FOperation<Signal>, FOperation<TResult>> transform, bool print)
+        static double FuseTest<TResult>(Func<IStreamable<Empty, Signal>> data,
+            Func<FOperation<Signal>, FOperation<TResult>> transform)
         {
             var stream = data();
 
@@ -51,25 +39,13 @@ namespace LifeStream
                 ;
 
             fStart.Connect();
-            long count = 0;
-            s_obs
-                .ToStreamEventObservable()
-                .Where(e => e.IsData && (e.IsInterval || e.IsStart))
-                .ForEach(e =>
-                {
-                    count++;
-                    if (print)
-                    {
-                        Console.WriteLine("{0}", e);
-                    }
-                });
+            s_obs.Cache();
             sw.Stop();
-            Console.WriteLine("Count: {0} events, Time: {1} sec, Throughput: {2:#.###} million events/sec",
-                count, sw.Elapsed.TotalSeconds, count / (sw.Elapsed.TotalSeconds * Math.Pow(10, 6)));
+            return sw.Elapsed.TotalSeconds;
         }
 
-        static void MultiNonFuseTest(
-            Func<IStreamable<Empty, Signal>> abp_data, Func<IStreamable<Empty, Signal>> ecg_data, bool print)
+        static double MultiNonFuseTest(
+            Func<IStreamable<Empty, Signal>> abp_data, Func<IStreamable<Empty, Signal>> ecg_data)
         {
             var abp = abp_data();
             var ecg = ecg_data();
@@ -91,21 +67,9 @@ namespace LifeStream
             var s_obs = fstream2
                     .Join(fstream1, (l, r) => new {l, r})
                 ;
-            long count = 0;
-            s_obs
-                .ToStreamEventObservable()
-                .Where(e => e.IsData && (e.IsInterval || e.IsStart))
-                .ForEach(e =>
-                {
-                    count++;
-                    if (print)
-                    {
-                        Console.WriteLine("{0}", e);
-                    }
-                });
+            s_obs.Cache();
             sw.Stop();
-            Console.WriteLine("Count: {0} events, Time: {1} sec, Throughput: {2:#.###} million events/sec",
-                count, sw.Elapsed.TotalSeconds, count / (sw.Elapsed.TotalSeconds * Math.Pow(10, 6)));
+            return sw.Elapsed.TotalSeconds;
         }
 
         internal static void PairJoiner(Signal l, Signal r, out FStreamable.SigPair o)
@@ -114,8 +78,8 @@ namespace LifeStream
             o.e = r;
         }
 
-        static void MultiFuseTest(Func<IStreamable<Empty, Signal>> abp_data, Func<IStreamable<Empty, Signal>> ecg_data,
-            bool print)
+        static double MultiFuseTest(Func<IStreamable<Empty, Signal>> abp_data,
+            Func<IStreamable<Empty, Signal>> ecg_data)
         {
             var abp = abp_data();
             var ecg = ecg_data();
@@ -148,36 +112,9 @@ namespace LifeStream
 
             fabp.Connect();
             fecg.Connect();
-            long count = 0;
-            s_obs
-                .ToStreamEventObservable()
-                .Where(e => e.IsData && (e.IsInterval || e.IsStart))
-                .ForEach(e =>
-                {
-                    count++;
-                    if (print)
-                    {
-                        Console.WriteLine("{0}", e);
-                    }
-                });
+            s_obs.Cache();
             sw.Stop();
-            Console.WriteLine("Count: {0} events, Time: {1} sec, Throughput: {2:#.###} million events/sec",
-                count, sw.Elapsed.TotalSeconds, count / (sw.Elapsed.TotalSeconds * Math.Pow(10, 6)));
-        }
-
-        static void FillJoiner<T>(T l, T r, out T o) => o = l;
-
-        static void FillConstSelector(long t, Signal s, out Signal o)
-        {
-            if (t == s.ts)
-            {
-                o = s;
-            }
-            else
-            {
-                o.ts = t;
-                o.val = 0;
-            }
+            return sw.Elapsed.TotalSeconds;
         }
 
         static void Main(string[] args)
@@ -190,14 +127,14 @@ namespace LifeStream
             int duration = Int32.Parse(args[0]);
             var testcase = args[1].ToLower();
             var engine = args[2].ToLower();
-            bool print = (args.Length == 4 && args[3].Equals("dbg"));
-            Console.Write("Benchmark: {0}, Engine: {1}, ", testcase, engine);
+            double time = 0;
 
             const int start = 0;
             const int freq = 500;
             const int period = 1000 / freq;
             const long window = 60000;
             const long gap_tol = window;
+            long count = (duration * freq);
             Config.DataGranularity = window;
 
             Func<IStreamable<Empty, Signal>> data = () =>
@@ -205,6 +142,7 @@ namespace LifeStream
                 return new TestObs("test", start, duration, freq)
                         .Select(e => e.Payload)
                         .ToTemporalStreamable(e => e.ts, e => e.ts + period)
+                        .Cache()
                     ;
             };
 
@@ -231,79 +169,83 @@ namespace LifeStream
             switch (testcase + "_" + engine)
             {
                 case "normalize_trill":
-                    NonFuseTest(data, stream =>
-                            stream
-                                .Normalize(window),
-                        print);
+                    time = NonFuseTest(data, stream =>
+                        stream
+                            .Normalize(window)
+                    );
                     break;
                 case "normalize_lifestream":
-                    FuseTest(data, stream =>
+                    time = FuseTest(data, stream =>
                             stream
-                                .Normalize(period, window),
-                        print);
+                                .Normalize(period, window))
+                        ;
                     break;
                 case "passfilter_trill":
-                    NonFuseTest(data, stream =>
-                            stream
-                                .BandPassFilter(period, window, 40, 300),
-                        print);
+                    time = NonFuseTest(data, stream =>
+                        stream
+                            .BandPassFilter(period, window, 40, 300)
+                    );
                     break;
                 case "passfilter_lifestream":
                     Config.FuseFactor = (int) (window / period);
-                    FuseTest(data, stream =>
-                            stream
-                                .BandPassFilter(period, window, 40, 300),
-                        print);
+                    time = FuseTest(data, stream =>
+                        stream
+                            .BandPassFilter(period, window, 40, 300)
+                    );
                     break;
                 case "fillconst_trill":
-                    NonFuseTest(data, stream =>
-                            stream
-                                .FillConst(period, gap_tol, 0),
-                        print);
+                    time = NonFuseTest(data, stream =>
+                        stream
+                            .FillConst(period, gap_tol, 0)
+                    );
                     break;
                 case "fillconst_lifestream":
                     Config.FuseFactor = (int) (window / period);
-                    FuseTest(data, stream =>
-                            stream
-                                .FillConst(period, gap_tol, 0),
-                        print);
+                    time = FuseTest(data, stream =>
+                        stream
+                            .FillConst(period, gap_tol, 0)
+                    );
                     break;
                 case "fillmean_trill":
-                    NonFuseTest(data, stream =>
-                            stream
-                                .FillMean(window, period, gap_tol),
-                        print);
+                    time = NonFuseTest(data, stream =>
+                        stream
+                            .FillMean(window, period, gap_tol)
+                    );
                     break;
                 case "fillmean_lifestream":
-                    FuseTest(data, stream =>
-                            stream
-                                .FillMean(window, period, gap_tol),
-                        print);
+                    time = FuseTest(data, stream =>
+                        stream
+                            .FillMean(window, period, gap_tol)
+                    );
                     break;
                 case "resample_trill":
-                    NonFuseTest(data, stream =>
-                            stream
-                                .Resample(period, period / 2),
-                        print);
+                    time = NonFuseTest(data, stream =>
+                        stream
+                            .Resample(period, period / 2)
+                    );
                     break;
                 case "resample_lifestream":
                     Config.FuseFactor = (int) (window / period);
-                    FuseTest(data, stream =>
-                            stream
-                                .Resample(period, period / 2, period),
-                        print);
+                    time = FuseTest(data, stream =>
+                        stream
+                            .Resample(period, period / 2, period)
+                    );
                     break;
                 case "endtoend_trill":
-                    MultiNonFuseTest(abp_data, ecg_data, print);
+                    count = duration * (500 + 125);
+                    time = MultiNonFuseTest(abp_data, ecg_data);
                     break;
                 case "endtoend_lifestream":
-                    MultiFuseTest(abp_data, ecg_data, print);
+                    count = duration * (500 + 125);
+                    time = MultiFuseTest(abp_data, ecg_data);
                     break;
                 default:
                     Console.Error.WriteLine("Unknown benchmark combination {0} on {1}", testcase, engine);
-                    break;
+                    return;
             }
 
+            Console.WriteLine("Benchmark: {0}, Engine: {1}, Data: {2} million events, Time: {3:.###} sec",
+                testcase, engine, count / 1000000f, time);
             Config.StreamScheduler.Stop();
         }
     }
