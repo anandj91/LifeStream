@@ -160,4 +160,4 @@ else:
     print("Unknown benchmark combination %s on NumLib" % (bench))
     exit(1)
 end = time.time()
-print("Benchmark: %s, Engine: NumLib, Data: %s million events, Time: %.3f sec" % (bench, count/1000000, end-start))
+print("Benchmark: %s, Engine: numlib, Data: %s million events, Time: %.3f sec" % (bench, count/1000000, end-start))
