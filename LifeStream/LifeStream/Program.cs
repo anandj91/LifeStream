@@ -184,7 +184,6 @@ namespace LifeStream
         {
             Config.DataBatchSize = 600000;
             Config.FuseFactor = 1;
-            //Config.FuseFactor = 60000/2;
             Config.StreamScheduler = StreamScheduler.OwnedThreads(2);
             Config.ForceRowBasedExecution = true;
 
@@ -192,6 +191,7 @@ namespace LifeStream
             var testcase = args[1].ToLower();
             var engine = args[2].ToLower();
             bool print = (args.Length == 4 && args[3].Equals("dbg"));
+            Console.Write("Benchmark: {0}, Engine: {1}, ", testcase, engine);
 
             const int start = 0;
             const int freq = 500;
