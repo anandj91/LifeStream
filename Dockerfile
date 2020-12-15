@@ -6,5 +6,4 @@ WORKDIR /root
 RUN apt-get update
 RUN apt-get install -y wget
 
-RUN cd LifeStream
 RUN ./setup.sh

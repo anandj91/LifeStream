@@ -14,3 +14,5 @@ mv /usr/share/dotnet/sdk/3.1.404/Sdks/Microsoft.NET.Sdk.WindowsDesktop/targets/M
 
 apt-get install -y mono-devel python3 python3-pip
 pip3 install -r requirements.txt
+DEBIAN_FRONTEND=noninteractive apt-get install -y gnuplot
+dotnet run -p LifeStream -c Release 6000 normalize trill

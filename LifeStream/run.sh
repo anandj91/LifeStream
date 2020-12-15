@@ -1,25 +1,35 @@
-DURATION=60000
-BENCHMARKS=("normalize" "passfilter" "fillconst" "fillmean" "resample" "endtoend")
+OP_BENCHS=("normalize" "passfilter" "fillconst" "fillmean" "resample")
+E2E_BENCHS=(30000 60000 90000 120000 150000)
 
-function run_bench {
+function run_opbench {
     ENGINE=$1
-    BENCH=$2
-
-    if [ "$ENGINE" == "lifestream" ] || [ "$ENGINE" == "trill" ]; then
-        dotnet run -p LifeStream -c Release $DURATION $BENCH $ENGINE
-    elif [ "$ENGINE" == "numlib" ]; then
-        python3 numlib.py $DURATION $BENCH
-    else
-        echo "Usage: ./run.sh (trill|numlib|lifestream) [(normalize|passfilter|fillconst|fillmean|resample|endtoend)]"
-        exit 1
-    fi
+    OUTPUT_FILE="results/op_${ENGINE}.csv"
+    rm -f $OUTPUT_FILE
+    echo "Operation benchmarks on $ENGINE"
+    echo "Benchmark,Time(sec)"
+    for bench in "${OP_BENCHS[@]}"; do
+        ./run_bench.sh 60000 $ENGINE $bench | awk '{print $2 $10}' | tee -a $OUTPUT_FILE
+    done
+    echo ""
 }
 
-if [[ $# -eq 1 ]]; then
-    for bench in "${BENCHMARKS[@]}"; do
-        run_bench $1 $bench
+function run_e2ebench {
+    ENGINE=$1
+    OUTPUT_FILE="results/e2e_${ENGINE}.csv"
+    rm -f $OUTPUT_FILE
+    echo "End-to-end benchmark on $ENGINE"
+    echo "Data size(million events),Time(sec)"
+    for dur in "${E2E_BENCHS[@]}"; do
+        ./run_bench.sh $dur $ENGINE endtoend | awk '{print $6 "," $10}' | tee -a $OUTPUT_FILE
     done
+    echo ""
+}
 
-else
-    run_bench $1 $2
-fi
+run_opbench trill
+run_opbench numlib
+run_opbench lifestream
+run_e2ebench trill
+run_e2ebench numlib
+run_e2ebench lifestream
+
+./plot.sh
