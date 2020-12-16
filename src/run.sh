@@ -1,5 +1,5 @@
 OP_BENCHS=("normalize" "passfilter" "fillconst" "fillmean" "resample")
-E2E_BENCHS=(30000 60000 90000 120000 150000)
+E2E_BENCHS=($(seq 30000 30000 300000))
 
 function run_opbench {
     ENGINE=$1
