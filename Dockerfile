@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-ADD ./LifeStream /root
+ADD ./src /root
 WORKDIR /root
 
 RUN apt-get update
