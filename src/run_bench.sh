@@ -7,6 +7,6 @@ if [ "$ENGINE" == "lifestream" ] || [ "$ENGINE" == "trill" ]; then
 elif [ "$ENGINE" == "numlib" ]; then
     python3 numlib.py $DURATION $BENCH
 else
-    echo "Usage: ./run.sh <data size (sec)> (trill|numlib|lifestream) [(normalize|passfilter|fillconst|fillmean|resample|endtoend)]"
+    echo "Usage: ./run_bench.sh <data size (sec)> (trill|numlib|lifestream) [(normalize|passfilter|fillconst|fillmean|resample|endtoend)]"
     exit 1
 fi

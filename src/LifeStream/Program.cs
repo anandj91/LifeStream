@@ -18,7 +18,9 @@ namespace LifeStream
             sw.Start();
             var s_obs = transform(stream);
 
-            s_obs.Cache();
+            s_obs
+                .ToStreamEventObservable()
+                .Wait();
             sw.Stop();
             return sw.Elapsed.TotalSeconds;
         }
@@ -39,7 +41,9 @@ namespace LifeStream
                 ;
 
             fStart.Connect();
-            s_obs.Cache();
+            s_obs
+                .ToStreamEventObservable()
+                .Wait();
             sw.Stop();
             return sw.Elapsed.TotalSeconds;
         }
@@ -67,7 +71,9 @@ namespace LifeStream
             var s_obs = fstream2
                     .Join(fstream1, (l, r) => new {l, r})
                 ;
-            s_obs.Cache();
+            s_obs
+                .ToStreamEventObservable()
+                .Wait();
             sw.Stop();
             return sw.Elapsed.TotalSeconds;
         }
@@ -112,14 +118,16 @@ namespace LifeStream
 
             fabp.Connect();
             fecg.Connect();
-            s_obs.Cache();
+            s_obs
+                .ToStreamEventObservable()
+                .Wait();
             sw.Stop();
             return sw.Elapsed.TotalSeconds;
         }
 
         static void Main(string[] args)
         {
-            Config.DataBatchSize = 600000;
+            Config.DataBatchSize = 120000;
             Config.FuseFactor = 1;
             Config.StreamScheduler = StreamScheduler.OwnedThreads(2);
             Config.ForceRowBasedExecution = true;
