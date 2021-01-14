@@ -25,22 +25,24 @@ class CSVSignal:
         self.period = period
         self.count = -1
         self.idx = 0
-        length = window//period
-        self.size = ((1000//period)*DURATION)//length
-        self.data = []
-        for i in range(0, self.size):
-            self.data.append(Signal(i*window, [float(i*window+l) for l in range(length)]))
+        self.length = window//period
+        self.size = ((1000//period)*DURATION)//self.length
+        self.data = [Signal(-1, [])]
+        for f in filenames:
+            with open(f) as csv_file:
+                csv_reader = csv.reader(csv_file, delimiter=',')
+                self.data = self._get_data(csv_reader, self.data)
+        self.data.pop(0)
 
-    def _get_data(self, filename, window, period, data):
-        length = window//period
+    def _get_data(self, reader, data):
         sig = data[-1]
-        for i in range(0, self.batch_size * window, period):
-            ts = i
-            val = float(i)
-            if ts//window > sig.ts//window:
-                data.append(Signal((ts//window)*window, [None for _ in range(length)]))
+        for row in reader:
+            ts = int(row[0])
+            val = float(row[1])
+            if ts//self.window > sig.ts//self.window:
+                data.append(Signal((ts//window)*window, [None for _ in range(self.length)]))
                 sig = data[-1]
-            idx = (ts - sig.ts)//period
+            idx = (ts - sig.ts)//self.period
             sig.val[idx] = val
     
         return data
