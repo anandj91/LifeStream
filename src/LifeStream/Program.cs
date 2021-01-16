@@ -199,6 +199,11 @@ namespace LifeStream
                 this.mask = mask;
                 this.signal = signal;
             }
+
+            public override string ToString()
+            {
+                return $"{nameof(mask)}: {mask}, {nameof(signal)}: {signal}";
+            }
         }
 
         static IStreamable<Empty, MaskedSignal> Trans(IStreamable<Empty, Signal> source)
@@ -206,16 +211,17 @@ namespace LifeStream
             var window = 60000;
             var iperiod = 8;
             var operiod = 2;
-            var gap_tol = 60000;
+            var gap_tol = 1000;
             return source
-                .Multicast(s => s
                     .Normalize(window)
                     .Resample(iperiod, operiod)
-                    .Chop(0, operiod, gap_tol)
-                    .Join(s.Mask(operiod, gap_tol),
-                        (s, b) => new MaskedSignal(b, s)
-                    )
-                );
+                    .AlterEventDuration((s, e) => e - s + gap_tol)
+                    .Multicast(t => t.ClipEventDuration(t))
+                    .AlterEventDuration((s, e) => (e - s > gap_tol) ? operiod : e - s)
+                    .Chop(0, operiod)
+                    .Select((ts, s) => new MaskedSignal(s.ts != ts, s))
+                    .AlterEventDuration(operiod)
+                ;
         }
 
         static double CAP(Func<IStreamable<Empty, Signal>> pulse_data,
@@ -243,33 +249,35 @@ namespace LifeStream
                     .Join(resp_spo2, (l, r) => new {l.h, l.p, r.r, r.s})
                     .Join(etco2_abpm, (l, r) => new {l.h, l.p, l.r, l.s, r.e, r.a})
                 ;
-            s_obs
+            pulse
                 .ToStreamEventObservable()
-                .Wait();
+                .ForEach(e =>
+                {
+                    Console.WriteLine(e);
+                });
             sw.Stop();
             return sw.Elapsed.TotalSeconds;
         }
-        
+
         static FOperation<MaskedSignal> Trans(FOperation<Signal> source)
         {
             var window = 60000;
             var iperiod = 8;
             var operiod = 2;
-            var gap_tol = 60000;
+            var gap_tol = 1000;
             return source
-                .Multicast(s => s
                     .Normalize(iperiod, window)
                     .Resample(iperiod, operiod, operiod)
-                    .AlterEventDuration((s, e) => (e - s > gap_tol) ? gap_tol : e - s)
+                    .ConsecutivePairs((Signal left, Signal right, out Signal output) => { output = left; })
+                    .AlterEventDuration((s, e) => (e - s > gap_tol) ? operiod : e - s)
                     .Chop(operiod)
-                    .Join(s.Mask(operiod, gap_tol),
-                        (Signal sig, bool b, out MaskedSignal output) =>
+                    .Select(
+                        (long ts, Signal input, out MaskedSignal output) =>
                         {
-                            output.signal = sig;
-                            output.mask = b;
-                        }
-                    )
-                );
+                            output.mask = input.ts != ts;
+                            output.signal = input;
+                        })
+                ;
         }
 
         class MSPair<T, U>
