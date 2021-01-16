@@ -40,9 +40,9 @@ namespace Microsoft.StreamProcessing
             return source
                     .ConsecutivePairs<Signal, SigPair>(ResampleJoiner)
                     .AlterEventDuration((s, e) => (e - s > gap_tol) ? iperiod : e - s)
-                    .Chop(1)
+                    .Chop(operiod)
                     .Select<SigPair, Signal>(ResampleSelector)
-                    .AlterPeriod(operiod)
+                //.AlterPeriod(operiod)
                 ;
         }
 
@@ -180,6 +180,20 @@ namespace Microsoft.StreamProcessing
                             }
                         }
                     )
+                ;
+        }
+
+        public static FOperation<bool> Mask(
+            this FOperation<Signal> source,
+            long period,
+            long gap_tol,
+            long offset = 0)
+        {
+            return source
+                    .ConsecutivePairs<Signal, Signal>(FillJoiner)
+                    .AlterEventDuration((s, e) => (e - s > gap_tol) ? period : e - s)
+                    .Chop(period)
+                    .Select((long ts, Signal e, out bool o) => o = (ts != e.ts))
                 ;
         }
     }
